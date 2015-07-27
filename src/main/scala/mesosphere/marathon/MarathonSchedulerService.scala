@@ -112,6 +112,7 @@ class MarathonSchedulerService @Inject() (
   def cancelDeployment(id: String): Unit =
     schedulerActor ! CancelDeployment(id)
 
+  @deprecated("Use GroupManager.root.transitiveApps", "0.10.0")
   def listApps(): Iterable[AppDefinition] =
     Await.result(appRepository.apps(), config.zkTimeoutDuration)
 

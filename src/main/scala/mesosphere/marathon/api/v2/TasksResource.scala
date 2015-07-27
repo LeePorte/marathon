@@ -82,7 +82,7 @@ class TasksResource @Inject() (
   @Timed
   def indexTxt(): Response = ok(EndpointsHelper.appsToEndpointString(
     taskTracker,
-    service.listApps().toSeq,
+    result(groupManager.root(false)).transitiveApps.toSeq,
     "\t"
   ))
 
