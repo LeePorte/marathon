@@ -1,7 +1,7 @@
 FROM java:8-jdk
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF && \
-    echo "deb http://repos.mesosphere.io/debian jessie-testing main" | tee /etc/apt/sources.list.d/mesosphere.list && \
+    echo "deb http://repos.mesosphere.io/debian jessie main" | tee /etc/apt/sources.list.d/mesosphere.list && \
     echo "deb http://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list && \
     apt-get update && \
     apt-get install --no-install-recommends -y --force-yes mesos sbt
