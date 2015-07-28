@@ -16,7 +16,7 @@ object AlwaysElectedLeadershipModule {
 }
 
 private class AlwaysElectedLeadershipModule(actorRefFactory: ActorRefFactory) extends LeadershipModule(actorRefFactory) {
-  override def startWhenLeader(props: => Props, name: String, preparedOnStart: Boolean = true): ActorRef =
+  override def startWhenLeader(props: Props, name: String, preparedOnStart: Boolean = true): ActorRef =
     actorRefFactory.actorOf(props, name)
   override def coordinator(): LeadershipCoordinator = ???
 }

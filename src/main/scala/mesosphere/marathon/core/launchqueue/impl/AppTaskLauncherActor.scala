@@ -11,8 +11,8 @@ import OfferMatcher.{ MatchedTasks, TaskWithSource }
 import mesosphere.marathon.core.matcher.base
 import mesosphere.marathon.core.matcher.base.OfferMatcher
 import mesosphere.marathon.core.matcher.manager.OfferMatcherManager
-import mesosphere.marathon.core.matcher.base.util.ActorTaskLaunchSource.TaskLaunchNotification
-import mesosphere.marathon.core.matcher.base.util.{ ActorTaskLaunchSource, ActorOfferMatcher }
+import mesosphere.marathon.core.matcher.base.util.TaskLaunchSourceDelegate.TaskLaunchNotification
+import mesosphere.marathon.core.matcher.base.util.{ TaskLaunchSourceDelegate, ActorOfferMatcher }
 import mesosphere.marathon.core.task.bus.TaskStatusObservables.TaskStatusUpdate
 import mesosphere.marathon.core.task.bus.{ MarathonTaskStatus, TaskStatusObservables }
 import mesosphere.marathon.state.{ AppDefinition, Timestamp }
@@ -90,7 +90,7 @@ private class AppTaskLauncherActor(
   private[this] var runningTasksMap: Map[String, MarathonTask] = _
 
   /** Decorator to use this actor as a [[base.OfferMatcher#TaskLaunchSource]] */
-  private[this] val myselfAsLaunchSource = ActorTaskLaunchSource(self)
+  private[this] val myselfAsLaunchSource = TaskLaunchSourceDelegate(self)
 
   override def preStart(): Unit = {
     super.preStart()
@@ -183,7 +183,7 @@ private class AppTaskLauncherActor(
   }
 
   private[this] def receiveTaskLaunchNotification: Receive = {
-    case ActorTaskLaunchSource.TaskLaunchRejected(taskInfo, reason) if inFlightTaskLaunches(taskInfo.getTaskId) =>
+    case TaskLaunchSourceDelegate.TaskLaunchRejected(taskInfo, reason) if inFlightTaskLaunches(taskInfo.getTaskId) =>
       // This task is not yet known to mesos, so there will be no event that removes
       // it automatically from the taskTracker.
       taskTracker.terminated(app.id, taskInfo.getTaskId.getValue)
@@ -194,9 +194,9 @@ private class AppTaskLauncherActor(
         taskInfo.getTaskId.getValue, reason, status)
       OfferMatcherRegistration.manageOfferMatcherStatus()
 
-    case ActorTaskLaunchSource.TaskLaunchRejected(taskInfo, reason) => // ignore
+    case TaskLaunchSourceDelegate.TaskLaunchRejected(taskInfo, reason) => // ignore
 
-    case ActorTaskLaunchSource.TaskLaunchAccepted(taskInfo) =>
+    case TaskLaunchSourceDelegate.TaskLaunchAccepted(taskInfo) =>
       inFlightTaskLaunches -= taskInfo.getTaskId
       log.info("Task launch for '{}' was accepted. {}", taskInfo.getTaskId.getValue, status)
   }
@@ -269,14 +269,14 @@ private class AppTaskLauncherActor(
             taskTracker
               .store(app.id, marathonTask)
               .map { _ =>
-                val reject = ActorTaskLaunchSource.TaskLaunchRejected(
+                val reject = TaskLaunchSourceDelegate.TaskLaunchRejected(
                   mesosTask, "timeout: no accept received within 3 seconds")
                 scheduleTaskLaunchTimeout(context, reject)
                 Seq(mesosTask)
               }.recover {
                 case NonFatal(e) =>
                   log.error(e, "While storing task '{}'", mesosTask.getTaskId.getValue)
-                  self ! ActorTaskLaunchSource.TaskLaunchRejected(mesosTask, "could not save task")
+                  self ! TaskLaunchSourceDelegate.TaskLaunchRejected(mesosTask, "could not save task")
                   Seq.empty
               }
           }
@@ -297,7 +297,7 @@ private class AppTaskLauncherActor(
 
   protected def scheduleTaskLaunchTimeout(
     context: ActorContext,
-    message: ActorTaskLaunchSource.TaskLaunchRejected): Cancellable =
+    message: TaskLaunchSourceDelegate.TaskLaunchRejected): Cancellable =
     {
       import context.dispatcher
       context.system.scheduler.scheduleOnce(3.seconds, self, message)

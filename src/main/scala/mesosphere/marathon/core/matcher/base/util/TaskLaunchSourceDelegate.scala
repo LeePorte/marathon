@@ -3,17 +3,17 @@ package mesosphere.marathon.core.matcher.base.util
 import akka.actor.ActorRef
 import mesosphere.marathon.core.matcher.base.OfferMatcher
 import OfferMatcher.TaskLaunchSource
-import mesosphere.marathon.core.matcher.base.util.ActorTaskLaunchSource.{ TaskLaunchRejected, TaskLaunchAccepted }
+import mesosphere.marathon.core.matcher.base.util.TaskLaunchSourceDelegate.{ TaskLaunchRejected, TaskLaunchAccepted }
 import org.apache.mesos.Protos.TaskInfo
 
-private class ActorTaskLaunchSource(actorRef: ActorRef) extends TaskLaunchSource {
+private class TaskLaunchSourceDelegate(actorRef: ActorRef) extends TaskLaunchSource {
   override def taskLaunchAccepted(taskInfo: TaskInfo): Unit = actorRef ! TaskLaunchAccepted(taskInfo)
   override def taskLaunchRejected(taskInfo: TaskInfo, reason: String): Unit =
     actorRef ! TaskLaunchRejected(taskInfo, reason)
 }
 
-object ActorTaskLaunchSource {
-  def apply(actorRef: ActorRef): TaskLaunchSource = new ActorTaskLaunchSource(actorRef)
+object TaskLaunchSourceDelegate {
+  def apply(actorRef: ActorRef): TaskLaunchSource = new TaskLaunchSourceDelegate(actorRef)
 
   sealed trait TaskLaunchNotification {
     def taskInfo: TaskInfo

@@ -9,8 +9,8 @@ import mesosphere.marathon.core.launchqueue.LaunchQueue.QueuedTaskCount
 import mesosphere.marathon.core.matcher.base.OfferMatcher
 import OfferMatcher.MatchedTasks
 import mesosphere.marathon.core.matcher.manager.OfferMatcherManager
-import mesosphere.marathon.core.matcher.base.util.ActorTaskLaunchSource.TaskLaunchRejected
-import mesosphere.marathon.core.matcher.base.util.{ ActorTaskLaunchSource, ActorOfferMatcher }
+import mesosphere.marathon.core.matcher.base.util.TaskLaunchSourceDelegate.TaskLaunchRejected
+import mesosphere.marathon.core.matcher.base.util.{ TaskLaunchSourceDelegate, ActorOfferMatcher }
 import mesosphere.marathon.core.task.bus.{ TaskStatusUpdateTestHelper, TaskStatusObservables }
 import mesosphere.marathon.core.task.bus.TaskStatusObservables.TaskStatusUpdate
 import mesosphere.marathon.state.{ AppDefinition, PathId }

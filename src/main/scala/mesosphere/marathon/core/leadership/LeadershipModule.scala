@@ -32,9 +32,9 @@ class LeadershipModule(actorRefFactory: ActorRefFactory) {
     *                                and is assumed to be ready when it replies with PreparationMessages.Prepared.
     * @return
     */
-  def startWhenLeader(props: => Props, name: String, considerPreparedOnStart: Boolean = true): ActorRef = {
+  def startWhenLeader(props: Props, name: String, considerPreparedOnStart: Boolean = true): ActorRef = {
     require(!started, "already started")
-    val proxyProps = WhenLeaderActor.props(props)
+    val proxyProps = WhenLeaderActor.props(props, considerPreparedOnStart)
     val actorRef = actorRefFactory.actorOf(proxyProps, name)
     whenLeaderRefs += actorRef
     actorRef
